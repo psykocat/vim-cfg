@@ -21,6 +21,15 @@ if has("syntax")
   syntax on
 endif
 
+if &term =~ '^screen'
+	" tmux will send xterm-style keys when its xterm-keys option is on
+	execute "set <xUp>=\e[1;*A"
+	execute "set <xDown>=\e[1;*B"
+	execute "set <xRight>=\e[1;*C"
+	execute "set <xLeft>=\e[1;*D"
+endif
+
+
 " This tests to see if vim was configured with the '--enable-cscope' option
 " when it was compiled.  If it wasn't, time to recompile vim...
 if has("cscope")
@@ -246,6 +255,10 @@ set tabpagemax=100
 set autoindent
 set smartindent         " Smart indent management
 set noendofline
+
+" Set cryptmethod
+set cryptmethod=blowfish2
+
 "To remove this behaviour with smartindent : When typing '#' as the first character in a new line, the indent for that line is removed, the '#' is put in the first column.
 :inoremap # X#
 
@@ -254,6 +267,8 @@ set cino+=:0            " place case statement on same column as switch
 
 " Set tag files to be looked from current dir to root dir until one is found
 set tags=./tags;/,./TAGS;/
+
+"set statusline+=%F
 
 colorscheme elflord
 
@@ -264,24 +279,13 @@ if expand("%:p:h") == "/"
     autocmd BufEnter * silent! lcd /home/jthomas
 endif
 
-""" Custom file extensions configuration
-autocmd FileType awk set commentstring=#\ %s
-" Preformat python and c files
-autocmd FileType python set tabstop=4 shiftwidth=4 expandtab colorcolumn=80
-autocmd FileType c set tabstop=8 shiftwidth=8 noexpandtab colorcolumn=80
-autocmd FileType yaml set tabstop=2 shiftwidth=2 expandtab
-" Auto set .wiki file with flexwiki syntax
-" it is disabled by default in filetype.vim due to some hazardous behaviour
-" when there is .wiki file that is not really a flexwiki syntax
-" but as it is not the case in my usage, I reactivate it locally
-autocmd BufNewFile,BufRead *.wiki setf flexwiki
-autocmd BufNewFile,BufRead *.gv setf dot
-autocmd BufNewFile,BufRead Dockerfile,*.Dockerfile,*.dockerfile,Dockerfile.*		setf dockerfile
-autocmd BufNewFile,BufRead *.groovy*,Jenkinsfile*			setf groovy
-
 """ Custom mapping
+" Use a function to do it as functions does not trigger highlight search
+function! TrimTrailingSpaces()
+    execute ':%s/\s\+$//g'
+endfunction
 " F2: remove spaces at the end of lines
-map <F2> <ESC>:%s/\s\+$//g<Return>:nohl<Return>
+map <F2> <ESC>:call TrimTrailingSpaces()<Return>
 " F3: select all
 map <F3> <ESC>ggVG
 " F4: auto brackets for shell variables
@@ -307,7 +311,6 @@ map ,wn <ESC>:new %:p:h<Return>
 map ,we <ESC>:edit %:p:h<Return>
 map ,wt <ESC>:tabnew %:p:h<Return>
 map ,wo <ESC>:Sexplore<Return>
-map ,dp <ESC>:Explore /home/jthomas/Documents/parrot<Return>
 
 " Keep only hexa address like elements
 map ,ph <ESC>:%s/.*\(0x[a-zA-Z0-9]\{1,8\}\).*/\1/g<Return>ggVG"+y<ESC>
@@ -316,6 +319,8 @@ map ,ph <ESC>:%s/.*\(0x[a-zA-Z0-9]\{1,8\}\).*/\1/g<Return>ggVG"+y<ESC>
 map ,as <ESC>:vertical resize<CR>:resize<CR><ESC>
 " Spaces converted to newline in current line
 map ,nl <ESC>:s/ /\r/g<CR>:nohl<CR><ESC>
+" comma converted to newline in current line
+map ,cnl <ESC>:s/,/,\r/g<CR>:nohl<CR><ESC>
 " Spaces converted to newline in all lines
 map ,anl <ESC>:%s/ /\r/g<CR>:nohl<CR><ESC>
 " Diff with first state of file
